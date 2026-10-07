@@ -1,0 +1,68 @@
+# ROZDANIA
+
+Zbiera **rozdania (giveaway) i darmowe pakiety** z kilku źródeł i — co jest
+istotne — **weryfikuje**, czy oferta naprawdę jest darmowa. Osobno: zbieranie
+to jedno zadanie, sprawdzanie drugie, więc są dwa osobne programy.
+
+| Stan na 6 października 2026 | |
+|---|---|
+| paczek w bazie | **624** (39 520 GB) |
+| darmowych ofert | **49** |
+| kontrola danych (`sprawdz.py`) | **10/10** |
+| zależności zewnętrzne | **zero** — standardowa biblioteka |
+
+## Uruchomienie
+
+```bash
+./pobierz.sh      # pobiera pakiety i oferty (limity świadome, patrz niżej)
+./sprawdz.sh      # 10 kontroli na danych: duplikaty, puste tytuły, śmieci
+./weryfikuj.sh    # otwiera stronę każdej oferty i czyta — wolne, osobno
+./start.sh        # serwer do podglądania
+```
+
+Wszystkie skrypty uruchamiają własny `python3` i korzystają wyłącznie ze
+standardowej biblioteki.
+
+## Uczciwie o tym, co to potwierdza
+
+`sprawdz.sh` zalicza **10/10**, ale to znaczy „sprawdzone na danych", nie
+„na pewno działa". Weryfikacja ceny wymaga otwarcia każdej strony sklepu —
+dlatego `weryfikuj.sh` jest osobnym, wolnym krokiem, a nie częścią pobierania.
+
+Nie ma tu testów jednostkowych. I to jest świadome, z komentarzem w kodzie
+(`sprawdz.py`):
+
+> Nie jest to test „czy kod jest poprawny". Test napisany przez tego samego
+> model, który napisał kod, potwierdza tylko to, co ten model już wiedział.
+
+## Limity pobierania zostają celowo
+
+W `pobierz.py`, nie jako opcja:
+
+- **cache 24 h** — inaczej każde uruchomienie odpytuje archiwum od nowa,
+- **1,2 s przerwy** między zapytaniami do `archive.org` — za szybko = 429,
+- **limit plików na platformę** (domyślnie 40 zbiorów) — 7000 zbiorów to tysiące
+  zbędnych requestów.
+
+## Źródła
+
+Wszystkie adresy są w jednym miejscu: `zrodla.py`. Nic nie jest kopiowane
+z innego projektu — to jedyne miejsce, które trzeba edytować, gdy źródło się
+zmieni.
+
+- `archive.org` — pakiety (wolumeny, roczne wydania)
+- `freebies.indiegala.com`, `store.epicgames.com`, `www.gamerpower.com` — oferty
+
+## Struktura
+
+| Plik | Rola |
+|---|---|
+| `pobierz.py` | pobiera do `dane/`, cache 24 h, limity |
+| `zrodla.py` | jedyne miejsce z adresami źródeł |
+| `baza.py` | schemat bazy (dwie tabele), zero migracji |
+| `sprawdz.py` | 10 kontroli na danych |
+| `weryfikuj.py` | otwiera stronę każdej oferty, czyta treść |
+| `serwer.py` / `ui.html` | podgląd |
+| `srodowisko/` | skrypty pomocnicze środowiska |
+
+Baza i cache są generowane i **nie są w repo** (`.gitignore`).

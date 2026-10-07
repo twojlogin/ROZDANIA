@@ -1,0 +1,22 @@
+# Cache pobierania: 24h ważny, regenerowany przez pobierz.py — nie w repo.
+dane/cache/
+
+# Baza generowana. Odtwarzalna: ./pobierz.sh
+*.db
+*.sqlite
+*.sqlite3
+
+# Sesje i sekrety powstające w trakcie działania (patrz wykluczenia w sync.sh)
+.cookies
+*.session
+*.session_secret
+*.app_settings.json
+.vault_verifier
+.filterlists
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.coverage
