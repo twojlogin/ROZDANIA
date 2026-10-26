@@ -18,6 +18,45 @@ KATALOG = Path(__file__).resolve().parent
 DB = KATALOG / "dane" / "rozdania.db"
 
 SCHEMAT = """
+CREATE TABLE IF NOT EXISTS gry (
+    id          TEXT PRIMARY KEY,
+    platforma   TEXT NOT NULL,
+    tytul       TEXT NOT NULL,
+    rok         INTEGER,
+    gatunek     TEXT,
+    region      TEXT,
+    opis        TEXT,
+    okladka     TEXT,
+    pobrania    INTEGER DEFAULT 0,
+    adres       TEXT,
+    pobrano     TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_gry_platforma ON gry(platforma);
+CREATE INDEX IF NOT EXISTS idx_gry_rok ON gry(rok);
+
+-- FTS5: pelnotekstowe wyszukiwanie po tytule, gatunku, opisie
+CREATE VIRTUAL TABLE IF NOT EXISTS gry_fts USING fts5(
+    tytul, gatunek, opis, platforma,
+    content='gry', content_rowid='rowid'
+);
+
+-- Triggery synchronizujace FTS z tabela gry
+CREATE TRIGGER IF NOT EXISTS gry_ai AFTER INSERT ON gry BEGIN
+    INSERT INTO gry_fts(rowid, tytul, gatunek, opis, platforma)
+    VALUES (new.rowid, new.tytul, new.gatunek, new.opis, new.platforma);
+END;
+CREATE TRIGGER IF NOT EXISTS gry_ad AFTER DELETE ON gry BEGIN
+    INSERT INTO gry_fts(gry_fts, rowid, tytul, gatunek, opis, platforma)
+    VALUES ('delete', old.rowid, old.tytul, old.gatunek, old.opis, old.platforma);
+END;
+CREATE TRIGGER IF NOT EXISTS gry_au AFTER UPDATE ON gry BEGIN
+    INSERT INTO gry_fts(gry_fts, rowid, tytul, gatunek, opis, platforma)
+    VALUES ('delete', old.rowid, old.tytul, old.gatunek, old.opis, old.platforma);
+    INSERT INTO gry_fts(rowid, tytul, gatunek, opis, platforma)
+    VALUES (new.rowid, new.tytul, new.gatunek, new.opis, new.platforma);
+END;
+
 CREATE TABLE IF NOT EXISTS pakiety (
     id          TEXT PRIMARY KEY,
     platforma   TEXT NOT NULL,
@@ -46,6 +85,12 @@ CREATE INDEX IF NOT EXISTS idx_darmowe_zrodlo     ON darmowe(zrodlo);
 """
 
 
+def przebuduj_fts(con):
+    """Przebudowuje indeks FTS5 z tabeli gry."""
+    con.execute("INSERT INTO gry_fts(gry_fts) VALUES ('rebuild')")
+    con.commit()
+
+
 def polacz():
     DB.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(DB, timeout=30)
@@ -54,6 +99,14 @@ def polacz():
     con.execute("PRAGMA busy_timeout=30000")
     con.executescript(SCHEMAT)
     con.commit()
+    # auto-rebuild FTS if empty but gry has rows
+    try:
+        n_gry = con.execute("SELECT COUNT(*) FROM gry").fetchone()[0]
+        n_fts = con.execute("SELECT COUNT(*) FROM gry_fts").fetchone()[0]
+        if n_gry > 0 and n_fts == 0:
+            przebuduj_fts(con)
+    except Exception:
+        pass
     return con
 
 
@@ -93,12 +146,35 @@ def wstaw_darmowe(con, rekordy):
             {**r, "stan": stan})
 
 
+def wstaw_gry(con, rekordy):
+    """rekordy: lista slownikow z pobierz.gry_dla_platformy()."""
+    con.executemany(
+        """INSERT INTO gry (id, platforma, tytul, rok, gatunek, region, opis, okladka, pobrania, adres, pobrano)
+           VALUES (:id, :platforma, :tytul, :rok, :gatunek, :region, :opis, :okladka, :pobrania, :adres, :pobrano)
+           ON CONFLICT(id) DO UPDATE SET
+             platforma=excluded.platforma,
+             tytul=excluded.tytul,
+             rok=excluded.rok,
+             gatunek=excluded.gatunek,
+             region=excluded.region,
+             opis=excluded.opis,
+             okladka=excluded.okladka,
+             pobrania=excluded.pobrania,
+             adres=excluded.adres,
+             pobrano=excluded.pobrano""",
+        rekordy)
+
+
 def statystyki(con):
     s = {}
     s["pakiety_razem"] = con.execute("SELECT COUNT(*) c FROM pakiety").fetchone()["c"]
     s["pakiety_gb"] = (con.execute(
         "SELECT COALESCE(SUM(bajty),0) c FROM pakiety").fetchone()["c"] or 0) / 1e9
     s["darmowe_razem"] = con.execute("SELECT COUNT(*) c FROM darmowe").fetchone()["c"]
+    s["gry_razem"] = con.execute("SELECT COUNT(*) c FROM gry").fetchone()["c"]
+    for row in con.execute(
+            "SELECT platforma, COUNT(*) c FROM gry GROUP BY platforma ORDER BY 2 DESC"):
+        s.setdefault("gry_platformy", {})[row["platforma"]] = row["c"]
     for row in con.execute(
             "SELECT stan, COUNT(*) c FROM darmowe GROUP BY stan ORDER BY 2 DESC"):
         s[f"darmowe_{row['stan']}"] = row["c"]

@@ -35,14 +35,13 @@ Nie ma tu testów jednostkowych. I to jest świadome, z komentarzem w kodzie
 > Nie jest to test „czy kod jest poprawny". Test napisany przez tego samego
 > model, który napisał kod, potwierdza tylko to, co ten model już wiedział.
 
-## Limity pobierania zostają celowo
+## Limity pobierania (świadome, nie opcjonalne)
 
-W `pobierz.py`, nie jako opcja:
-
-- **cache 24 h** — inaczej każde uruchomienie odpytuje archiwum od nowa,
-- **1,2 s przerwy** między zapytaniami do `archive.org` — za szybko = 429,
-- **limit plików na platformę** (domyślnie 40 zbiorów) — 7000 zbiorów to tysiące
-  zbędnych requestów.
+- **cache 24 h** — inaczej każde uruchomienie odpytuje archiwum od nowa
+- **1,2 s przerwy** między zapytaniami (konfigurowalne: `--przerwa 2.0`)
+- **retry z backoffem** przy HTTP 429/503 (2s, 4s, 8s + Retry-After)
+- **limit plików na platformę** (domyślnie 40 zbiorów)
+- **`--gry`** — pobiera pojedyncze gry z archive.org (metadane, okładki)
 
 ## Źródła
 

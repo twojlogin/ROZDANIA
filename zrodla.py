@@ -231,6 +231,54 @@ def czy_zbior_jest_paczka_gier(tytul, bajty, platforma=None):
     return True
 
 
+def czy_gra_individualna(tytul, subject, bajty, rok=None):
+    """True gdy wpis to pojedyncza gra (nie paczka/kolekcja/magazyn)."""
+    import re
+    t = (tytul or "").lower()
+    s = (subject or "").lower() if isinstance(subject, str) else " ".join(subject or []).lower()
+
+    # kolekcje/paczki/magazyny/narzedzia - odrzuc
+    for smiec in ("complete", "roms", "pack", "collection", "compilation",
+                  "all games", "full set", "rom set", "romset", "magazine",
+                  "cd-rom", "cdrom", "cover cd", "coverdisc", "cover disc",
+                  "demo disc", "sampler", "promo", "preview", "emulator",
+                  "sdk", "devkit", "firmware", "prototype", "recompiled",
+                  "undub", "uncut", "ciso", "soft", "catalog", "machine guide",
+                  "archive", "remaster", "rom hack", "hack", "translation",
+                  "essential", "score", "cover", "demo", "tool", "utility",
+                  "extractor", "converter", "editor"):
+        if smiec in t:
+            return False
+
+    # ROM-dumpy z tagami [!] [b] itp. - odrzuc
+    if re.search(r"\[[!bh]\]", tytul or ""):
+        return False
+
+    # musi wygladac jak gra: rok z pola year LUB rok w nawiasach tytulu
+    rok_ok = False
+    if rok is not None:
+        try:
+            y = int(rok)
+            if 1970 <= y <= 2010:
+                rok_ok = True
+        except (ValueError, TypeError):
+            pass
+    if not rok_ok:
+        m = re.search(r"\((\d{4})\)", tytul or "")
+        if m:
+            y = int(m.group(1))
+            if 1970 <= y <= 2010:
+                rok_ok = True
+    if not rok_ok:
+        return False
+
+    # odrzuc jesli subject zawiera "magazine" lub "cover"
+    if "magazine" in s or "cover" in s:
+        return False
+
+    return True
+
+
 def url_szukaj_archiwum(q):
     return ARCHIWUM["szukaj"].format(q=urllib.parse.quote_plus(q))
 

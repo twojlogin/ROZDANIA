@@ -48,6 +48,34 @@ class Obsluga(BaseHTTPRequestHandler):
                     "SELECT * FROM pakiety ORDER BY platforma, bajty DESC")]
             con.close()
             return self._json(w)
+        if sciezka == "/api/gry":
+            con = baza.polacz()
+            plat = (parse_qs(urlparse(self.path).query).get("platforma") or [None])[0]
+            q = (parse_qs(urlparse(self.path).query).get("q") or [""])[0].strip()
+            if q:
+                # FTS5: wyszukiwanie pelnotekstowe (tytul, gatunek, opis, platforma)
+                sql = ("SELECT g.* FROM gry g JOIN gry_fts f ON g.rowid = f.rowid "
+                       "WHERE gry_fts MATCH ?")
+                params = [q]
+                if plat:
+                    sql += " AND g.platforma = ?"
+                    params.append(plat)
+                sql += " ORDER BY g.pobrania DESC"
+                try:
+                    w = [dict(r) for r in con.execute(sql, params)]
+                except Exception:
+                    # fallback gdy FTS nie dziala
+                    w = [dict(r) for r in con.execute(
+                        "SELECT * FROM gry WHERE lower(tytul) LIKE ?" + (" AND platforma=?" if plat else "") + " ORDER BY pobrania DESC",
+                        [f"%{q.lower()}%"] + ([plat] if plat else []))]
+            elif plat:
+                w = [dict(r) for r in con.execute(
+                    "SELECT * FROM gry WHERE platforma=? ORDER BY pobrania DESC", (plat,))]
+            else:
+                w = [dict(r) for r in con.execute(
+                    "SELECT * FROM gry ORDER BY platforma, pobrania DESC")]
+            con.close()
+            return self._json(w)
         if sciezka == "/api/summary":
             con = baza.polacz()
             s = baza.statystyki(con)

@@ -57,11 +57,15 @@
 
   <div class="tabs">
     <button class="on" data-tab="darmowe">Darmowe oferty</button>
+    <button data-tab="gry">Gry (archive.org)</button>
     <button data-tab="pakiety">Paczki ROM-ow</button>
   </div>
 
   <div class="row">
     <input type="search" id="q" placeholder="szukaj tytulu..." />
+    <select id="platforma">
+      <option value="">wszystkie platformy</option>
+    </select>
     <span class="meta" id="licznik"></span>
   </div>
   <div class="cards" id="grid"></div>
@@ -79,8 +83,11 @@ const gb = b => !b ? '—' : b >= 1e9 ? (b/1e9).toFixed(1)+' GB'
 async function load() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '<div class="empty">laczę...</div>';
+  const plat = document.getElementById('platforma').value;
+  let url = `${API}/api/${tab}`;
+  if (tab === 'gry' && plat) url += '?platforma=' + encodeURIComponent(plat);
   try {
-    const r = await fetch(`${API}/api/${tab}`);
+    const r = await fetch(url);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     wszystkie = await r.json();
   } catch (e) {
@@ -93,7 +100,9 @@ async function load() {
 
 function rysuj() {
   const f = wszystkie.filter(x =>
-    !filtr || (x.tytul || '').toLowerCase().includes(filtr));
+    (!filtr || (x.tytul || '').toLowerCase().includes(filtr)) &&
+    (tab !== 'gry' || !document.getElementById('platforma').value ||
+     x.platforma === document.getElementById('platforma').value));
   document.getElementById('licznik').textContent =
     `${f.length} z ${wszystkie.length}`;
 
@@ -103,6 +112,18 @@ function rysuj() {
     return;
   }
   g.innerHTML = f.map(x => {
+    if (tab === 'gry') return `
+      <div class="card">
+        ${x.okladka ? `<img src="${esc(x.okladka)}" alt="" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:6px;" loading="lazy" onerror="this.style.display='none'" />` : ''}
+        <h3>${esc(x.tytul)}</h3>
+        <div><span class="tag">${esc(x.platforma)}</span>
+             ${x.rok ? `<span class="tag">${x.rok}</span>` : ''}
+             ${x.gatunek ? `<span class="tag">${esc(x.gatunek)}</span>` : ''}
+             ${x.region ? `<span class="tag">${esc(x.region)}</span>` : ''}
+             ${x.pobrania ? `<span class="tag">${x.pobrania} pobran</span>` : ''}</div>
+        ${x.opis ? `<div class="sub">${esc((x.opis||'').slice(0,140))}</div>` : ''}
+        <a href="${esc(x.adres)}" target="_blank" rel="noopener">archive.org</a>
+      </div>`;
     if (tab === 'pakiety') return `
       <div class="card">
         <h3>${esc(x.tytul)}</h3>
@@ -127,9 +148,20 @@ document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
   tab = b.dataset.tab;
+  // populate platform filter for gry tab
+  const sel = document.getElementById('platforma');
+  if (tab === 'gry') {
+    const plats = [...new Set(wszystkie.map(x => x.platforma))].sort();
+    sel.innerHTML = '<option value="">wszystkie platformy</option>' +
+      plats.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+    sel.style.display = '';
+  } else {
+    sel.style.display = 'none';
+  }
   load();
 });
 document.getElementById('q').oninput = e => { filtr = e.target.value.toLowerCase(); rysuj(); };
+document.getElementById('platforma').onchange = () => load();
 load();
 </script>
 </body>
