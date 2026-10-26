@@ -38,10 +38,25 @@ Nie ma tu testów jednostkowych. I to jest świadome, z komentarzem w kodzie
 ## Limity pobierania (świadome, nie opcjonalne)
 
 - **cache 24 h** — inaczej każde uruchomienie odpytuje archiwum od nowa
-- **1,2 s przerwy** między zapytaniami (konfigurowalne: `--przerwa 2.0`)
+- **1,2 s przerwy** między zapytaniami (konfigurowalne: `--przerwa 2.0`, min 1.0s)
 - **retry z backoffem** przy HTTP 429/503 (2s, 4s, 8s + Retry-After)
-- **limit plików na platformę** (domyślnie 40 zbiorów)
+- **limit requestów** (domyślnie 200, `--max-requestow 0` = bez limitu)
+- **limit gier na platformę** (domyślnie 40)
 - **`--gry`** — pobiera pojedyncze gry z archive.org (metadane, okładki)
+- **User-Agent** identyfikuje ROZDANIA (nie udaje przeglądarki)
+
+## Szanowanie infrastruktury (archive.org)
+
+ROZDANIA jest „uprzejmym obywatelem” (polite citizen):
+- nie pobiera więcej niż potrzeba (limit + cache + deduplikacja),
+- czeka między requestami (1.2s domyślnie),
+- ponawia z backoffem przy 429 (nie zalewa serwera),
+- szanuje `Retry-After` z nagłówka,
+- cache 24h — nie odpytuje tego samego dwa razy,
+- limit 200 requestów na uruchomienie (zabezpieczenie przed runaway).
+
+Nie używamy `curl | bash`, nie scrapujemy HTML z Wayback Machine bez potrzeby.
+Metadata pobieramy z oficjalnego API archive.org (advancedsearch + metadata).
 
 ## Źródła
 

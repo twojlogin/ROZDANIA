@@ -33,16 +33,19 @@ DOMYSLNE_NA_PLATFORMĘ = 40
 PRZERWA = 1.2          # sekundy miedzy zapytaniami
 CACHE_GODZIN = 24
 _REQUESTS = 0  # licznik realnych requestow (nie z cache)
+MAX_REQUESTS = 200
 
 
 def _ua():
-    return ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+    return ("ROZDANIA/1.0 (retro game metadata; "
+            "+https://github.com/twojlogin/ROZDANIA; "
+            "polite crawler, 1.2s delay, 24h cache)")
 
 
 def pobierz_json(url, klucz_cache=None, przerwa=PRZERWA, proby=3):
     """Zwraca (dane, z_cache). Blad -> (None, False) i wypis na stderr.
     Ponawia proby przy 429/503/timeout z backoffem (2s, 4s, 8s)."""
+    global _REQUESTS
     plik = CACHE / f"{klucz_cache}.json" if klucz_cache else None
     if plik and plik.exists():
         wiek = datetime.now(timezone.utc) - datetime.fromtimestamp(
@@ -52,6 +55,10 @@ def pobierz_json(url, klucz_cache=None, przerwa=PRZERWA, proby=3):
                 return json.loads(plik.read_text(encoding="utf-8")), True
             except (ValueError, OSError):
                 pass                      # uszkodzony cache -> pobierz od nowa
+
+    if MAX_REQUESTS > 0 and _REQUESTS >= MAX_REQUESTS:
+        print(f"  ! osiagnieto limit requestow ({MAX_REQUESTS}) - pomijam: {url[:60]}", file=sys.stderr)
+        return None, False
 
     for proba in range(proby):
         if proba > 0:
@@ -65,7 +72,6 @@ def pobierz_json(url, klucz_cache=None, przerwa=PRZERWA, proby=3):
         try:
             with urllib.request.urlopen(req, timeout=45) as r:
                 dane = json.loads(r.read().decode("utf-8", "replace"))
-            global _REQUESTS
             _REQUESTS += 1
             if plik:
                 try:
@@ -365,9 +371,12 @@ def main():
                     help="gier na platforme (domyslnie 40)")
     ap.add_argument("--przerwa", type=float, default=PRZERWA,
                     help=f"sekundy miedzy requestami (domyslnie {PRZERWA}, min 1.0)")
+    ap.add_argument("--max-requestow", type=int, default=200,
+                    help="maks. requestow na uruchomienie (domyslnie 200, 0=bez limitu)")
     a = ap.parse_args()
 
     PRZERWA = max(1.0, a.przerwa)
+    MAX_REQUESTS = a.max_requestow
 
     klucze = ([k.strip() for k in a.platformy.split(",") if k.strip()]
               or list(zrodla.PLATFORMY))
