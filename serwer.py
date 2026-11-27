@@ -88,7 +88,10 @@ class Obsluga(BaseHTTPRequestHandler):
         self._json({"error": "nie ma takiej trasy"}, 404)
 
     def _plik(self, nazwa):
-        body = (KATALOG / nazwa).read_bytes()
+        sciezka = (KATALOG / nazwa).resolve()
+        if KATALOG not in sciezka.parents or sciezka.suffix.lower() != ".html":
+            return self._json({"error": "nie ma takiej trasy"}, 404)
+        body = sciezka.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))

@@ -126,6 +126,7 @@
 const state = { tab:'gry', platforma:'', q:'', kategoria:'', sort:'popular', limit:60, data:{gry:[], pakiety:[], darmowe:[]}, summary:null };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => { try { const x = new URL(String(u||''), 'https://archive.org'); return /^https?:$/.test(x.protocol) ? x.href : '#'; } catch { return '#'; } };
 const gb = b => (Number(b||0)/1e9).toFixed(2) + ' GB';
 const num = v => Number(v||0);
 
@@ -197,7 +198,7 @@ function render() {
   if (state.tab === 'gry') {
     $('out').innerHTML = '<div class="grid">' + shown.map(x => `
       <article class="card">
-        ${x.okladka ? `<img class="cover" loading="lazy" src="${esc(x.okladka)}" alt="">` : ''}
+        ${x.okladka ? `<img class="cover" loading="lazy" src="${esc(safeUrl(x.okladka))}" alt="">` : ''}
         <h3>${esc(x.tytul_czysty || x.tytul)}</h3>
         <div class="tags">
           <span class="tag">${esc(x.platforma||'')}</span>
@@ -207,7 +208,7 @@ function render() {
           ${badgeKat('gra')}
         </div>
         <div class="desc">${esc((x.opis||'').slice(0,160))}</div>
-        <div class="small">Pobrań: ${esc(x.pobrania||0)} • <a href="${esc(x.adres)}" target="_blank" rel="noopener">archive.org</a></div>
+        <div class="small">Pobrań: ${esc(x.pobrania||0)} • <a href="${esc(safeUrl(x.adres))}" target="_blank" rel="noopener noreferrer">archive.org</a></div>
       </article>`).join('') + '</div>';
     return;
   }
@@ -224,7 +225,7 @@ function render() {
           <td>${gb(x.bajty)}</td>
           <td>${esc(x.plikow||'')}</td>
           <td>${badgeKat(kat)}</td>
-          <td><a href="${esc(x.opis)}" target="_blank" rel="noopener">archive</a></td>
+          <td><a href="${esc(safeUrl(x.opis))}" target="_blank" rel="noopener noreferrer">archive</a></td>
         </tr>`;
       }).join('') + '</tbody></table>';
     return;
@@ -237,7 +238,7 @@ function render() {
       <h3>${esc(x.tytul)}</h3>
       <div class="tags"><span class="tag">${esc(x.zrodlo||'')}</span><span class="tag ${cls}">${esc(st)}</span></div>
       <div class="desc">${esc((x.opis||'').slice(0,180))}</div>
-      <div class="small"><a href="${esc(x.adres)}" target="_blank" rel="noopener">strona oferty</a></div>
+      <div class="small"><a href="${esc(safeUrl(x.adres))}" target="_blank" rel="noopener noreferrer">strona oferty</a></div>
     </article>`;
   }).join('') + '</div>';
 }
