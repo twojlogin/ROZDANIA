@@ -6,6 +6,19 @@ dane/cache/
 *.sqlite
 *.sqlite3
 
+# Eksport katalogu Markdown (generowany przez eksportuj.py)
+katalog/
+
+# Lokalne sekrety/klucze/pliki środowiskowe
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# OS/editor
+.DS_Store
+
 # Sesje i sekrety powstające w trakcie działania (patrz wykluczenia w sync.sh)
 .cookies
 *.session

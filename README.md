@@ -14,14 +14,35 @@ to jedno zadanie, sprawdzanie drugie, więc są dwa osobne programy.
 ## Uruchomienie
 
 ```bash
-./pobierz.sh      # pobiera pakiety i oferty (limity świadome, patrz niżej)
+./pobierz.sh      # pobiera metadane pakietów/ofert (limity świadome, patrz niżej)
+./pobierz.sh --gry --platformy nes,snes,ps1  # metadane pojedynczych gier
 ./sprawdz.sh      # 10 kontroli na danych: duplikaty, puste tytuły, śmieci
 ./weryfikuj.sh    # otwiera stronę każdej oferty i czyta — wolne, osobno
 ./start.sh        # serwer do podglądania
+python3 eksportuj.py  # eksport katalogu do Markdown (awesome-retro)
 ```
 
 Wszystkie skrypty uruchamiają własny `python3` i korzystają wyłącznie ze
 standardowej biblioteki.
+
+## Bezpieczeństwo (ważne)
+
+- **Tylko metadane/linki.** ROZDANIA nie pobiera ROM-ów, archiwów ani plików wykonywalnych.
+- **Archive.org jest niezaufane.** Paczki mogą zawierać uszkodzone pliki, śmieci, nielegalne treści w Twojej jurysdykcji albo **złośliwe oprogramowanie**. To dotyczy też „normalnie wyglądających” paczek.
+- **Nic nie uruchamiaj automatycznie.** Przed użyciem: weryfikuj hash/źródło, sprawdzaj formaty, skanuj w izolacji/sandboxie, używaj osobnego środowiska.
+- **Brak gwarancji.** Wpis w katalogu nie oznacza, że coś jest bezpieczne, kompletne, legalne do pobrania/użycia ani warte uwagi.
+
+## Katalog retro (awesome-retro)
+
+Projekt może służyć jako lokalny katalog retro pogrupowany po konsolach/platformach:
+metadane, rok, gatunek, region, link do archive.org. Eksport:
+
+```bash
+python3 eksportuj.py --out katalog
+```
+
+Tworzy `katalog/README.md` i `katalog/<platforma>.md`. To widok katalogu, nie
+rekomendacja pobierania.
 
 ## Uczciwie o tym, co to potwierdza
 
@@ -76,6 +97,7 @@ zmieni.
 | `baza.py` | schemat bazy (dwie tabele), zero migracji |
 | `sprawdz.py` | 10 kontroli na danych |
 | `weryfikuj.py` | otwiera stronę każdej oferty, czyta treść |
+| `eksportuj.py` | eksport katalogu retro do Markdown (`katalog/`) |
 | `serwer.py` / `ui.html` | podgląd |
 | `srodowisko/` | skrypty pomocnicze środowiska |
 
