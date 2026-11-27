@@ -9,6 +9,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 
 import baza
+import zrodla
 
 PORT = 8770
 KATALOG = __import__("pathlib").Path(__file__).resolve().parent
@@ -46,6 +47,9 @@ class Obsluga(BaseHTTPRequestHandler):
             else:
                 w = [dict(r) for r in con.execute(
                     "SELECT * FROM pakiety ORDER BY platforma, bajty DESC")]
+            for r in w:
+                r["kategoria"] = zrodla.klasyfikuj_wpis(r.get("tytul"), int(r.get("bajty") or 0))
+                r["tytul_czysty"] = zrodla.czysty_tytul(r.get("tytul"))
             con.close()
             return self._json(w)
         if sciezka == "/api/gry":

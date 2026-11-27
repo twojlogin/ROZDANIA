@@ -363,10 +363,12 @@ def main():
     ap.add_argument("--limit", type=int, default=DOMYSLNE_NA_PLATFORMĘ,
                     help=f"zbiorow na platforme (domyslnie {DOMYSLNE_NA_PLATFORMĘ})")
     ap.add_argument("--darmowe", action="store_true", help="tylko giveaway")
+    ap.add_argument("--pakiety", action="store_true",
+                    help="pobierz duże paczki/archiwa ROM-ów (woluminy, nie pojedyncze gry)")
     ap.add_argument("--bez-metadata", action="store_true",
-                    help="pomija pobieranie listy plikow (szybsze)")
+                    help="pomija pobieranie listy plikow (szybsze, dotyczy --pakiety)")
     ap.add_argument("--gry", action="store_true",
-                    help="pobierz tez pojedyncze gry z archive.org (metadane, okladki)")
+                    help="pobierz pojedyncze gry z archive.org (metadane, okladki)")
     ap.add_argument("--limit-gier", type=int, default=40,
                     help="gier na platforme (domyslnie 40)")
     ap.add_argument("--przerwa", type=float, default=PRZERWA,
@@ -388,8 +390,12 @@ def main():
 
     con = baza.polacz()
 
-    if not a.darmowe:
-        print(f"\n  Platforme: {len(klucze)} x max {a.limit} zbiorow")
+    pobierz_gry = a.gry or (not a.darmowe and not a.pakiety)
+    pobierz_pakiety = a.pakiety
+
+    if pobierz_pakiety and not a.darmowe:
+        print(f"\n  Paczki/archiwa: {len(klucze)} x max {a.limit} zbiorow")
+        print("  Uwaga: to duze paczki metadanych, nie pojedyncze gry. Zawartosc niezaufana.")
         for klucz in klucze:
             nazwa = zrodla.PLATFORMY[klucz]["nazwa"]
             print(f"\n  -> {nazwa}")
@@ -404,7 +410,7 @@ def main():
             con.commit()
             print(f"     {len(pak)} zbiorow, {gb:.1f} GB")
 
-    if a.gry:
+    if pobierz_gry and not a.darmowe:
         print("\n  Gry (pojedyncze tytuly z archive.org):")
         for klucz in klucze:
             nazwa = zrodla.PLATFORMY[klucz]["nazwa"]

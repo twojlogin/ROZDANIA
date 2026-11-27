@@ -113,23 +113,50 @@ def eksportuj(out: Path) -> dict:
             plines.append("")
         ps = pak_by_plat.get(p, [])
         if ps:
-            plines += [
-                "## Paczki/archiwa (metadane)",
-                "",
-                "> Paczki mogą być duże i zawierać niezweryfikowane pliki. Nie pobieraj automatycznie.",
-                "",
-                "| Tytuł | Rok | Rozmiar GB | Plików | Link |",
-                "|---|---:|---:|---:|---|",
-            ]
-            for pk in ps[:200]:
-                gb = (int(pk.get('bajty') or 0) / 1e9)
-                plines.append(
-                    f"| {_md(pk['tytul'])} | {pk.get('rok') or ''} | {gb:.2f} | "
-                    f"{pk.get('plikow') or ''} | {_link('archive', pk.get('opis',''))} |"
-                )
-            if len(ps) > 200:
-                plines.append(f"\n_... i {len(ps)-200} więcej paczek w bazie._\n")
-            plines.append("")
+            normalne, ryzykowne = [], []
+            for pk in ps:
+                kat = zrodla.klasyfikuj_wpis(pk.get("tytul"), int(pk.get("bajty") or 0))
+                pk2 = dict(pk)
+                pk2["_kat"] = kat
+                pk2["_tytul"] = zrodla.czysty_tytul(pk.get("tytul"))
+                (ryzykowne if kat in ("ryzyko", "system_narzedzia") else normalne).append(pk2)
+
+            if normalne:
+                plines += [
+                    "## Paczki/archiwa (metadane)",
+                    "",
+                    "> Paczki mogą być duże i zawierać niezweryfikowane pliki. Nie pobieraj automatycznie.",
+                    "",
+                    "| Tytuł | Rok | Rozmiar GB | Plików | Kategoria | Link |",
+                    "|---|---:|---:|---:|---|---|",
+                ]
+                for pk in normalne[:200]:
+                    gb = (int(pk.get('bajty') or 0) / 1e9)
+                    plines.append(
+                        f"| {_md(pk['_tytul'])} | {pk.get('rok') or ''} | {gb:.2f} | "
+                        f"{pk.get('plikow') or ''} | {_md(pk['_kat'])} | {_link('archive', pk.get('opis',''))} |"
+                    )
+                if len(normalne) > 200:
+                    plines.append(f"\n_... i {len(normalne)-200} więcej paczek w bazie._\n")
+                plines.append("")
+
+            if ryzykowne:
+                plines += [
+                    "## System / narzędzia / niezweryfikowane ryzyko",
+                    "",
+                    "> Wpisy nie są katalogiem gier. Mogą zawierać BIOS/SDK/homebrew/crack/jailbreak lub inne ryzykowne treści. Nie pobieraj ani nie uruchamiaj.",
+                    "",
+                    "| Tytuł | Kategoria | Rozmiar GB | Link |",
+                    "|---|---|---:|---|",
+                ]
+                for pk in ryzykowne[:100]:
+                    gb = (int(pk.get('bajty') or 0) / 1e9)
+                    plines.append(
+                        f"| {_md(pk['_tytul'])} | {_md(pk['_kat'])} | {gb:.2f} | {_link('archive', pk.get('opis',''))} |"
+                    )
+                if len(ryzykowne) > 100:
+                    plines.append(f"\n_... i {len(ryzykowne)-100} więcej wpisów ryzykownych/narzędziowych._\n")
+                plines.append("")
 
         plines += ["[← indeks](README.md)", ""]
         (out / f"{p}.md").write_text("\n".join(plines), encoding="utf-8")

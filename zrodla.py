@@ -200,7 +200,12 @@ def czy_oferta_jest_gra(tytul):
 NIE_GRA_TYTUL = (
     # narzedzia, nie gry
     "scanner", "trainer", "trainers", "cheat", "cheats",
-    "rgh", "homebrew", "devkit", "firmware", "bios pack",
+    "rgh", "homebrew", "devkit", "firmware", "bios",
+    "sdk", "jailbreak", "hen ", "ps3hen", "cfw", "webman", "multiman",
+    "crack", "keygen", "ubuntu", "linux",
+    "emulator", "mame", "retroarch", "mechacon", "dump",
+    # aktualizacje/dodatki same w sobie (nie paczki gier)
+    "update", "updates", "dlc pack", "patch pack",
     # same listy i bazy, bez gier
     "link list", "links for", "gamelist", "game list", "title list",
     "database", ".dat", "savestate", "save states", "save game",
@@ -224,8 +229,13 @@ def czy_zbior_jest_paczka_gier(tytul, bajty, platforma=None):
     if bajty is None or bajty < MIN_BAJTY:
         return False
 
+    import re
     for smiec in NIE_GRA_TYTUL:
-        if smiec in t:
+        # Krótkie/tokenowe wzorce dopasowuj jako słowa, żeby nie łapać "bioshock"
+        if smiec.replace(" ", "").isalnum() and len(smiec) <= 8:
+            if re.search(rf"(?<![a-z]){re.escape(smiec)}(?![a-z])", t):
+                return False
+        elif smiec in t:
             return False
 
     return True
@@ -285,3 +295,62 @@ def url_szukaj_archiwum(q):
 
 def url_opis(ident):
     return ARCHIWUM["opisy"].format(ident=ident)
+
+
+# ---------------------------------------------------------------- klasyfikacja
+RYZYKO_WZORCE = (
+    "crack", "keygen", "warez", "pirat", "jailbreak", "cfw", "hen ",
+    "ps3hen", "webman", "multiman", "rgh", "xboxmod", "modchip",
+)
+SYSTEM_NARZEDZIA_WZORCE = (
+    "bios", "firmware", "sdk", "devkit", "mechacon", "dump", "emulator",
+    "mame", "retroarch", "ubuntu", "linux", "scanner", "trainer", "cheat",
+    "savestate", "save state", "gamelist", "game list", "title list",
+    "database", ".dat",
+)
+PACZKA_WZORCE = (
+    "collection", "rom set", "romset", "rom pack", "rom-pack", "compilation",
+    "complete", "full set", "all games", "1g1r", "no-intro", "nointro",
+    "redump", "archive", "set", "bundle", "pack",
+)
+
+
+def czysty_tytul(tytul: str | None) -> str:
+    """Czytelniejszy tytuł do eksportu/UI (bez agresywnej zmiany znaczenia)."""
+    import re
+    from urllib.parse import unquote
+
+    t = unquote(tytul or "")
+    t = t.replace("_", " ")
+    t = re.sub(r"\s+", " ", t).strip()
+    # usuń długie śmieciowe sekwencje typu 25d25d...
+    t = re.sub(r"(?:[0-9a-f]{2}d){3,}[0-9a-f]*", "", t, flags=re.IGNORECASE)
+    t = re.sub(r"\s{2,}", " ", t).strip(" -_")
+    return t or (tytul or "")
+
+
+def klasyfikuj_wpis(tytul: str | None, bajty: int = 0, jest_gra: bool = False) -> str:
+    """Zwraca: gra | paczka | system_narzedzia | ryzyko."""
+    import re
+    t = (tytul or "").lower()
+    for w in RYZYKO_WZORCE:
+        if len(w) <= 8 and w.replace(" ", "").isalnum():
+            if re.search(rf"(?<![a-z]){re.escape(w)}(?![a-z])", t):
+                return "ryzyko"
+        elif w in t:
+            return "ryzyko"
+    for w in SYSTEM_NARZEDZIA_WZORCE:
+        if len(w) <= 8 and w.replace(" ", "").isalnum():
+            if re.search(rf"(?<![a-z]){re.escape(w)}(?![a-z])", t):
+                return "system_narzedzia"
+        elif w in t:
+            return "system_narzedzia"
+    if jest_gra:
+        return "gra"
+    for w in PACZKA_WZORCE:
+        if w in t:
+            return "paczka"
+    # Heurystyka: bardzo duże zbiory to zwykle paczki
+    if bajty and bajty > 2 * 1024 * 1024 * 1024:
+        return "paczka"
+    return "paczka"

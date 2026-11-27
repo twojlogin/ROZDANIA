@@ -14,8 +14,9 @@ to jedno zadanie, sprawdzanie drugie, więc są dwa osobne programy.
 ## Uruchomienie
 
 ```bash
-./pobierz.sh      # pobiera metadane pakietów/ofert (limity świadome, patrz niżej)
-./pobierz.sh --gry --platformy nes,snes,ps1  # metadane pojedynczych gier
+./pobierz.sh      # domyślnie: pojedyncze gry (metadane) + darmowe oferty
+./pobierz.sh --platformy nes,snes,ps1,ps2,n64  # gry z wybranych platform
+./pobierz.sh --pakiety  # duże paczki/archiwa ROM-ów (ostrożnie, dużo śmieci/ryzyka)
 ./sprawdz.sh      # 10 kontroli na danych: duplikaty, puste tytuły, śmieci
 ./weryfikuj.sh    # otwiera stronę każdej oferty i czyta — wolne, osobno
 ./start.sh        # serwer do podglądania

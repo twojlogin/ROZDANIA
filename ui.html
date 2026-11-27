@@ -125,15 +125,21 @@ function rysuj() {
         ${x.opis ? `<div class="sub">${esc((x.opis||'').slice(0,140))}</div>` : ''}
         <a href="${esc(x.adres)}" target="_blank" rel="noopener">archive.org</a>
       </div>`;
-    if (tab === 'pakiety') return `
-      <div class="card">
-        <h3>${esc(x.tytul)}</h3>
+    if (tab === 'pakiety') {
+      const kat = x.kategoria || 'paczka';
+      const ryzyko = (kat === 'ryzyko' || kat === 'system_narzedzia');
+      return `
+      <div class="card"${ryzyko ? ' style="border-color:#7a4b00"' : ''}>
+        <h3>${esc(x.tytul_czysty || x.tytul)}</h3>
         <div><span class="tag">${esc(x.platforma)}</span>
              ${x.rok ? `<span class="tag">${x.rok}</span>` : ''}
              <span class="tag">${gb(x.bajty)}</span>
-             ${x.plikow ? `<span class="tag">${x.plikow} plikow</span>` : ''}</div>
+             ${x.plikow ? `<span class="tag">${x.plikow} plikow</span>` : ''}
+             <span class="tag ${ryzyko ? 'platne' : ''}">${esc(kat)}</span></div>
+        ${ryzyko ? `<div class="sub platne">Niezweryfikowane/narzędziowe – nie pobieraj ani nie uruchamiaj.</div>` : ''}
         <a href="${esc(x.opis)}" target="_blank" rel="noopener">zobacz na archive.org</a>
       </div>`;
+    }
     return `
       <div class="card">
         <h3>${esc(x.tytul)}</h3>
