@@ -3,173 +3,277 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ROZDANIA</title>
+<title>ROZDANIA / Katalog Retro</title>
 <style>
   :root {
-    --bg:#0d1117; --panel:#161b22; --border:#30363d;
-    --txt:#e6edf3; --dim:#8b949e; --acc:#58a6ff; --ok:#3fb950;
+    --bg:#0b0f14; --panel:#121923; --panel2:#182233; --border:#263449;
+    --txt:#e6edf3; --dim:#93a4b8; --acc:#58a6ff; --ok:#3fb950;
+    --warn:#d29922; --bad:#f85149; --chip:#1b2738;
   }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--txt);
-         font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  header { padding:18px 22px; border-bottom:1px solid var(--border);
-           display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
-  h1 { margin:0; font-size:19px; letter-spacing:.06em; }
-  .meta { color:var(--dim); font-size:12px; }
-  main { padding:18px 22px 60px; max-width:1200px; }
-  .tabs { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
-  .tabs button { background:var(--panel); color:var(--dim); border:1px solid var(--border);
-    padding:7px 14px; border-radius:6px; cursor:pointer; font:inherit; }
-  .tabs button.on { background:var(--acc); color:#06121f; border-color:var(--acc); font-weight:600; }
-  .row { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
-  input[type=search], select { background:var(--panel); color:var(--txt);
-    border:1px solid var(--border); padding:8px 11px; border-radius:6px; font:inherit; }
-  input[type=search] { flex:1; min-width:220px; }
-  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:12px; }
-  .card { background:var(--panel); border:1px solid var(--border); border-radius:8px;
-          padding:13px 15px; display:flex; flex-direction:column; gap:7px; }
-  .card h3 { margin:0; font-size:14px; font-weight:600; line-height:1.35; }
-  .card a { color:var(--acc); text-decoration:none; font-size:12px; word-break:break-all; }
-  .card a:hover { text-decoration:underline; }
-  .tag { display:inline-block; font-size:11px; padding:2px 8px; border-radius:20px;
-         border:1px solid var(--border); color:var(--dim); }
-  .sub { color:var(--dim); font-size:12px; }
-  .darmowe { color:var(--ok); } .platne { color:#f85149; }
-  .nie_wiem, .do_sprawdzenia { color:#d29922; }
-  .empty { color:var(--dim); padding:40px 0; text-align:center; }
-  .uwaga { background:#1c2128; border-left:3px solid #d29922; padding:11px 15px;
-           border-radius:0 6px 6px 0; color:var(--dim); font-size:12.5px; margin-bottom:18px; }
-  code { background:#21262d; padding:1px 5px; border-radius:4px; font-size:12px; }
+  body { margin:0; background:linear-gradient(180deg,#0b0f14,#0e1520); color:var(--txt); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  a { color:var(--acc); text-decoration:none; } a:hover { text-decoration:underline; }
+  .wrap { max-width:1400px; margin:0 auto; padding:18px; }
+  header { display:flex; gap:16px; align-items:flex-start; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; }
+  h1 { margin:0; font-size:24px; letter-spacing:.03em; }
+  .subhead { color:var(--dim); font-size:13px; margin-top:4px; }
+  .stats { display:flex; gap:8px; flex-wrap:wrap; }
+  .stat { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:8px 12px; min-width:110px; }
+  .stat .n { font-size:20px; font-weight:700; }
+  .stat .l { color:var(--dim); font-size:12px; }
+  .banner { background:#1a1710; border:1px solid #5a4515; color:#e7d7b0; padding:12px 14px; border-radius:10px; margin-bottom:14px; font-size:13px; }
+  .banner b { color:#ffd37a; }
+  .layout { display:grid; grid-template-columns:260px 1fr; gap:14px; }
+  @media (max-width:980px) { .layout { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; }
+  .side { padding:12px; position:sticky; top:12px; align-self:start; }
+  .side h2, .mainhead h2 { margin:0 0 10px; font-size:13px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; }
+  .plat { display:flex; justify-content:space-between; gap:8px; width:100%; padding:8px 10px; margin-bottom:6px; background:transparent; color:var(--txt); border:1px solid transparent; border-radius:8px; cursor:pointer; font:inherit; text-align:left; }
+  .plat:hover { background:var(--panel2); border-color:var(--border); }
+  .plat.on { background:#17263b; border-color:#31507a; }
+  .plat .c { color:var(--dim); font-size:12px; }
+  .main { padding:12px; }
+  .controls { display:grid; grid-template-columns:1fr 170px 170px 170px; gap:8px; margin-bottom:12px; }
+  @media (max-width:900px) { .controls { grid-template-columns:1fr 1fr; } }
+  @media (max-width:560px) { .controls { grid-template-columns:1fr; } }
+  input, select, button.tab { background:#0f1621; color:var(--txt); border:1px solid var(--border); padding:9px 11px; border-radius:8px; font:inherit; }
+  input:focus, select:focus { outline:1px solid #3b6ea8; border-color:#3b6ea8; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  button.tab { cursor:pointer; color:var(--dim); }
+  button.tab.on { background:#1a2d47; color:var(--txt); border-color:#3b6ea8; }
+  .meta { color:var(--dim); font-size:12px; margin-bottom:10px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+  .card { background:#111a27; border:1px solid var(--border); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px; }
+  .card.risk { border-color:#6b4b16; background:#17130d; }
+  .card h3 { margin:0; font-size:14px; line-height:1.35; }
+  .tags { display:flex; gap:6px; flex-wrap:wrap; }
+  .tag { background:var(--chip); color:#c4d1df; border:1px solid #304259; padding:2px 7px; border-radius:999px; font-size:11px; }
+  .tag.ok { color:#bde7c4; border-color:#2f5a39; background:#132117; }
+  .tag.warn { color:#ffdca0; border-color:#6b541a; background:#211a0d; }
+  .tag.bad { color:#ffb8b2; border-color:#6b2a2a; background:#231212; }
+  .desc { color:var(--dim); font-size:12px; }
+  .cover { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:8px; border:1px solid var(--border); background:#0b1118; }
+  table { width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border:1px solid var(--border); border-radius:10px; }
+  th, td { padding:9px 10px; text-align:left; border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  th { color:var(--dim); font-size:12px; background:#111b29; position:sticky; top:0; }
+  tr:last-child td { border-bottom:none; }
+  tr.risk td { background:#18130c; }
+  .empty { color:var(--dim); padding:30px 10px; text-align:center; border:1px dashed var(--border); border-radius:10px; }
+  .small { font-size:12px; color:var(--dim); }
+  .toolbar-note { margin-top:8px; color:var(--dim); font-size:12px; }
+  code { background:#1a2433; padding:1px 5px; border-radius:4px; }
 </style>
 </head>
 <body>
-<header>
-  <h1>ROZDANIA</h1>
-  <span class="meta">paczki ROM-ow + darmowe oferty &middot; baza: <code>dane/rozdania.db</code></span>
-</header>
-<main>
-  <div class="uwaga">
-    <b>Tylko metadane/linki — nic nie pobieraj ani nie uruchamiaj na ślepo.</b>
-    Paczki/gry z archive.org są <b>niezaufane</b>: mogą zawierać uszkodzone pliki, śmieci lub
-    <b>złośliwe oprogramowanie</b>. Przed użyciem: weryfikuj źródło/hash, skanuj w izolacji/sandboxie.
-    Wpis w katalogu nie jest potwierdzeniem bezpieczeństwa ani legalności.
-    Stan <span class="do_sprawdzenia">do_sprawdzenia</span> w ofertach znaczy "nikt nie sprawdził strony sklepu".
+<div class="wrap">
+  <header>
+    <div>
+      <h1>ROZDANIA / Katalog Retro</h1>
+      <div class="subhead">Lokalny katalog metadanych: gry, paczki, darmowe oferty. Bez pobierania ROM-ów.</div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="banner">
+    <b>Tylko metadane/linki.</b> Archive.org i inne źródła są <b>niezaufane</b>: paczki mogą zawierać śmieci, uszkodzone pliki albo <b>złośliwe oprogramowanie</b>.
+    Nie pobieraj/nie uruchamiaj automatycznie. Weryfikuj hash, skanuj w izolacji/sandboxie. Wpis nie oznacza bezpieczeństwa ani legalności.
   </div>
 
-  <div class="tabs">
-    <button class="on" data-tab="darmowe">Darmowe oferty</button>
-    <button data-tab="gry">Gry (archive.org)</button>
-    <button data-tab="pakiety">Paczki ROM-ow</button>
-  </div>
+  <div class="layout">
+    <aside class="panel side">
+      <h2>Platformy</h2>
+      <div id="platforms"></div>
+      <div class="toolbar-note">Filtr platformy działa dla gier i paczek.</div>
+    </aside>
 
-  <div class="row">
-    <input type="search" id="q" placeholder="szukaj tytulu..." />
-    <select id="platforma">
-      <option value="">wszystkie platformy</option>
-    </select>
-    <span class="meta" id="licznik"></span>
+    <main class="panel main">
+      <div class="tabs">
+        <button class="tab on" data-tab="gry">Gry</button>
+        <button class="tab" data-tab="pakiety">Paczki</button>
+        <button class="tab" data-tab="darmowe">Darmowe oferty</button>
+      </div>
+
+      <div class="controls">
+        <input id="q" type="search" placeholder="Szukaj tytułu / opisu..." />
+        <select id="kategoria">
+          <option value="">Wszystkie kategorie</option>
+          <option value="gra">gra</option>
+          <option value="paczka">paczka</option>
+          <option value="system_narzedzia">system_narzedzia</option>
+          <option value="ryzyko">ryzyko</option>
+        </select>
+        <select id="sort">
+          <option value="popular">Sort: popularność</option>
+          <option value="size">Sort: rozmiar</option>
+          <option value="year">Sort: rok</option>
+          <option value="title">Sort: tytuł</option>
+        </select>
+        <select id="limit">
+          <option value="60">Pokaż 60</option>
+          <option value="120">Pokaż 120</option>
+          <option value="300">Pokaż 300</option>
+          <option value="9999">Pokaż wszystko</option>
+        </select>
+      </div>
+
+      <div class="meta" id="meta">Ładowanie…</div>
+      <div id="out"></div>
+    </main>
   </div>
-  <div class="cards" id="grid"></div>
-</main>
+</div>
 
 <script>
-const API = 'http://127.0.0.1:8770';
-let tab = 'darmowe', wszystkie = [], filtr = '';
+const state = { tab:'gry', platforma:'', q:'', kategoria:'', sort:'popular', limit:60, data:{gry:[], pakiety:[], darmowe:[]}, summary:null };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gb = b => (Number(b||0)/1e9).toFixed(2) + ' GB';
+const num = v => Number(v||0);
 
-const esc = s => String(s ?? '').replace(/[&<>"']/g, m =>
-  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const gb = b => !b ? '—' : b >= 1e9 ? (b/1e9).toFixed(1)+' GB'
-                    : b >= 1e6 ? (b/1e6).toFixed(0)+' MB' : (b/1e3).toFixed(0)+' kB';
-
-async function load() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '<div class="empty">laczę...</div>';
-  const plat = document.getElementById('platforma').value;
-  let url = `${API}/api/${tab}`;
-  if (tab === 'gry' && plat) url += '?platforma=' + encodeURIComponent(plat);
-  try {
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    wszystkie = await r.json();
-  } catch (e) {
-    grid.innerHTML = `<div class="empty">Serwer nie odpowiada (${esc(e.message)}).<br>
-      Uruchom: <code>./start.sh</code></div>`;
-    return;
-  }
-  rysuj();
+async function getJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(url + ' -> ' + r.status);
+  return r.json();
 }
 
-function rysuj() {
-  const f = wszystkie.filter(x =>
-    (!filtr || (x.tytul || '').toLowerCase().includes(filtr)) &&
-    (tab !== 'gry' || !document.getElementById('platforma').value ||
-     x.platforma === document.getElementById('platforma').value));
-  document.getElementById('licznik').textContent =
-    `${f.length} z ${wszystkie.length}`;
+function setStats() {
+  const s = state.summary || {};
+  const items = [
+    ['Gry', s.gry_razem ?? state.data.gry.length],
+    ['Paczki', s.pakiety_razem ?? state.data.pakiety.length],
+    ['Darmowe', s.darmowe_razem ?? state.data.darmowe.length],
+    ['GB paczek', (s.pakiety_gb ?? 0).toFixed ? Number(s.pakiety_gb).toFixed(1) : s.pakiety_gb],
+  ];
+  $('stats').innerHTML = items.map(([l,n]) => `<div class="stat"><div class="n">${esc(n)}</div><div class="l">${esc(l)}</div></div>`).join('');
+}
 
-  const g = document.getElementById('grid');
-  if (!f.length) {
-    g.innerHTML = '<div class="empty">Brak wynikow. Uruchom <code>./pobierz.sh</code></div>';
-    return;
+function platformCounts() {
+  const counts = {};
+  const src = state.tab === 'gry' ? state.data.gry : state.tab === 'pakiety' ? state.data.pakiety : [];
+  for (const x of src) counts[x.platforma] = (counts[x.platforma] || 0) + 1;
+  return counts;
+}
+
+function renderPlatforms() {
+  const counts = platformCounts();
+  const plats = Object.keys(counts).sort((a,b)=>counts[b]-counts[a] || a.localeCompare(b));
+  const all = plats.reduce((a,k)=>a+counts[k],0);
+  const btn = (key, label, count) => `<button class="plat ${state.platforma===key?'on':''}" data-p="${esc(key)}"><span>${esc(label)}</span><span class="c">${count}</span></button>`;
+  $('platforms').innerHTML = btn('', 'Wszystkie', all) + plats.map(p => btn(p, p, counts[p])).join('') || '<div class="small">Brak danych dla tej zakładki.</div>';
+  $('platforms').querySelectorAll('.plat').forEach(b => b.onclick = () => { state.platforma = b.dataset.p; renderPlatforms(); render(); });
+}
+
+function filtered() {
+  let arr = [...(state.data[state.tab] || [])];
+  if (state.platforma && state.tab !== 'darmowe') arr = arr.filter(x => x.platforma === state.platforma);
+  if (state.kategoria && state.tab === 'pakiety') arr = arr.filter(x => (x.kategoria||'paczka') === state.kategoria);
+  if (state.q) {
+    const q = state.q.toLowerCase();
+    arr = arr.filter(x => JSON.stringify(x).toLowerCase().includes(q));
   }
-  g.innerHTML = f.map(x => {
-    if (tab === 'gry') return `
-      <div class="card">
-        ${x.okladka ? `<img src="${esc(x.okladka)}" alt="" style="width:100%;max-height:140px;object-fit:cover;border-radius:6px;margin-bottom:6px;" loading="lazy" onerror="this.style.display='none'" />` : ''}
-        <h3>${esc(x.tytul)}</h3>
-        <div><span class="tag">${esc(x.platforma)}</span>
-             ${x.rok ? `<span class="tag">${x.rok}</span>` : ''}
-             ${x.gatunek ? `<span class="tag">${esc(x.gatunek)}</span>` : ''}
-             ${x.region ? `<span class="tag">${esc(x.region)}</span>` : ''}
-             ${x.pobrania ? `<span class="tag">${x.pobrania} pobran</span>` : ''}</div>
-        ${x.opis ? `<div class="sub">${esc((x.opis||'').slice(0,140))}</div>` : ''}
-        <a href="${esc(x.adres)}" target="_blank" rel="noopener">archive.org</a>
-      </div>`;
-    if (tab === 'pakiety') {
-      const kat = x.kategoria || 'paczka';
-      const ryzyko = (kat === 'ryzyko' || kat === 'system_narzedzia');
-      return `
-      <div class="card"${ryzyko ? ' style="border-color:#7a4b00"' : ''}>
+  const byTitle = (a,b)=>String(a.tytul_czysty||a.tytul||'').localeCompare(String(b.tytul_czysty||b.tytul||''), 'pl');
+  if (state.sort === 'title') arr.sort(byTitle);
+  if (state.sort === 'year') arr.sort((a,b)=>num(b.rok)-num(a.rok) || byTitle(a,b));
+  if (state.sort === 'size') arr.sort((a,b)=>num(b.bajty)-num(a.bajty) || byTitle(a,b));
+  if (state.sort === 'popular') {
+    if (state.tab === 'gry') arr.sort((a,b)=>num(b.pobrania)-num(a.pobrania) || byTitle(a,b));
+    else if (state.tab === 'pakiety') arr.sort((a,b)=>num(b.bajty)-num(a.bajty) || byTitle(a,b));
+    else arr.sort((a,b)=>String(a.stan||'').localeCompare(String(b.stan||'')) || byTitle(a,b));
+  }
+  return arr;
+}
+
+function badgeKat(kat) {
+  const k = kat || 'paczka';
+  const cls = k === 'ryzyko' ? 'bad' : k === 'system_narzedzia' ? 'warn' : k === 'gra' ? 'ok' : '';
+  return `<span class="tag ${cls}">${esc(k)}</span>`;
+}
+
+function render() {
+  const arr = filtered();
+  const shown = arr.slice(0, state.limit);
+  $('meta').textContent = `${arr.length} wpisów • pokazuję ${shown.length} • zakładka: ${state.tab}${state.platforma ? ' • platforma: '+state.platforma : ''}`;
+  if (!shown.length) { $('out').innerHTML = '<div class="empty">Brak wyników. Zmień filtr lub uruchom <code>./pobierz.sh</code>.</div>'; return; }
+
+  if (state.tab === 'gry') {
+    $('out').innerHTML = '<div class="grid">' + shown.map(x => `
+      <article class="card">
+        ${x.okladka ? `<img class="cover" loading="lazy" src="${esc(x.okladka)}" alt="">` : ''}
         <h3>${esc(x.tytul_czysty || x.tytul)}</h3>
-        <div><span class="tag">${esc(x.platforma)}</span>
-             ${x.rok ? `<span class="tag">${x.rok}</span>` : ''}
-             <span class="tag">${gb(x.bajty)}</span>
-             ${x.plikow ? `<span class="tag">${x.plikow} plikow</span>` : ''}
-             <span class="tag ${ryzyko ? 'platne' : ''}">${esc(kat)}</span></div>
-        ${ryzyko ? `<div class="sub platne">Niezweryfikowane/narzędziowe – nie pobieraj ani nie uruchamiaj.</div>` : ''}
-        <a href="${esc(x.opis)}" target="_blank" rel="noopener">zobacz na archive.org</a>
-      </div>`;
-    }
-    return `
-      <div class="card">
-        <h3>${esc(x.tytul)}</h3>
-        <div><span class="tag">${esc(x.zrodlo)}</span>
-             <span class="tag ${esc(x.stan)}">${esc(x.stan)}</span></div>
-        ${x.opis ? `<div class="sub">${esc(x.opis.slice(0,140))}</div>` : ''}
-        <a href="${esc(x.adres)}" target="_blank" rel="noopener">strona oferty</a>
-      </div>`;
-  }).join('');
+        <div class="tags">
+          <span class="tag">${esc(x.platforma||'')}</span>
+          ${x.rok ? `<span class="tag">${esc(x.rok)}</span>` : ''}
+          ${x.gatunek ? `<span class="tag">${esc(x.gatunek)}</span>` : ''}
+          ${x.region ? `<span class="tag">${esc(x.region)}</span>` : ''}
+          ${badgeKat('gra')}
+        </div>
+        <div class="desc">${esc((x.opis||'').slice(0,160))}</div>
+        <div class="small">Pobrań: ${esc(x.pobrania||0)} • <a href="${esc(x.adres)}" target="_blank" rel="noopener">archive.org</a></div>
+      </article>`).join('') + '</div>';
+    return;
+  }
+
+  if (state.tab === 'pakiety') {
+    $('out').innerHTML = `<table><thead><tr><th>Tytuł</th><th>Platforma</th><th>Rok</th><th>Rozmiar</th><th>Pliki</th><th>Kategoria</th><th>Link</th></tr></thead><tbody>` +
+      shown.map(x => {
+        const kat = x.kategoria || 'paczka';
+        const risk = kat === 'ryzyko' || kat === 'system_narzedzia';
+        return `<tr class="${risk?'risk':''}">
+          <td><div><b>${esc(x.tytul_czysty || x.tytul)}</b></div>${risk?'<div class="small" style="color:#ffb8b2">Niezweryfikowane/narzędziowe. Nie pobieraj ani nie uruchamiaj.</div>':''}</td>
+          <td>${esc(x.platforma||'')}</td>
+          <td>${esc(x.rok||'')}</td>
+          <td>${gb(x.bajty)}</td>
+          <td>${esc(x.plikow||'')}</td>
+          <td>${badgeKat(kat)}</td>
+          <td><a href="${esc(x.opis)}" target="_blank" rel="noopener">archive</a></td>
+        </tr>`;
+      }).join('') + '</tbody></table>';
+    return;
+  }
+
+  $('out').innerHTML = '<div class="grid">' + shown.map(x => {
+    const st = x.stan || 'do_sprawdzenia';
+    const cls = st === 'darmowe' ? 'ok' : st === 'platne' ? 'bad' : 'warn';
+    return `<article class="card">
+      <h3>${esc(x.tytul)}</h3>
+      <div class="tags"><span class="tag">${esc(x.zrodlo||'')}</span><span class="tag ${cls}">${esc(st)}</span></div>
+      <div class="desc">${esc((x.opis||'').slice(0,180))}</div>
+      <div class="small"><a href="${esc(x.adres)}" target="_blank" rel="noopener">strona oferty</a></div>
+    </article>`;
+  }).join('') + '</div>';
 }
 
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
+async function loadTab(tab) {
+  if (tab === 'gry' && !state.data.gry.length) state.data.gry = await getJson('/api/gry');
+  if (tab === 'pakiety' && !state.data.pakiety.length) state.data.pakiety = await getJson('/api/pakiety');
+  if (tab === 'darmowe' && !state.data.darmowe.length) state.data.darmowe = await getJson('/api/darmowe');
+}
+
+async function init() {
+  try {
+    state.summary = await getJson('/api/summary');
+  } catch (_) {}
+  await loadTab(state.tab);
+  setStats();
+  renderPlatforms();
+  render();
+}
+
+document.querySelectorAll('.tab').forEach(b => b.onclick = async () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
-  tab = b.dataset.tab;
-  // populate platform filter for gry tab
-  const sel = document.getElementById('platforma');
-  if (tab === 'gry') {
-    const plats = [...new Set(wszystkie.map(x => x.platforma))].sort();
-    sel.innerHTML = '<option value="">wszystkie platformy</option>' +
-      plats.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
-    sel.style.display = '';
-  } else {
-    sel.style.display = 'none';
-  }
-  load();
+  state.tab = b.dataset.tab;
+  state.platforma = '';
+  $('kategoria').style.display = state.tab === 'pakiety' ? '' : 'none';
+  $('sort').querySelector('[value="size"]').disabled = state.tab === 'darmowe';
+  await loadTab(state.tab);
+  setStats(); renderPlatforms(); render();
 });
-document.getElementById('q').oninput = e => { filtr = e.target.value.toLowerCase(); rysuj(); };
-document.getElementById('platforma').onchange = () => load();
-load();
+$('q').oninput = e => { state.q = e.target.value; render(); };
+$('kategoria').onchange = e => { state.kategoria = e.target.value; render(); };
+$('sort').onchange = e => { state.sort = e.target.value; render(); };
+$('limit').onchange = e => { state.limit = Number(e.target.value); render(); };
+$('kategoria').style.display = 'none';
+init().catch(e => { $('meta').textContent = 'Błąd ładowania: ' + e.message; });
 </script>
 </body>
 </html>
